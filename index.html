@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Capas del corazón</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="stage">
+    <header class="title">
+      <h1>Capas del corazón</h1>
+      <p class="subtitle">Abre cada capa y descubre un recuerdo.</p>
+    </header>
+
+    <section class="card-area" aria-live="polite">
+      <!-- Capas dinámicas se insertarán aquí -->
+      <div id="envelopes" class="envelopes"></div>
+    </section>
+
+    <footer class="controls">
+      <button id="startBtn" class="btn">Empezar</button>
+      <button id="resetBtn" class="btn ghost">Reiniciar</button>
+    </footer>
+    <!-- confetti container -->
+    <div id="confetti"></div>
+    <!-- sonido final -->
+    <audio id="finishSound" src="data:audio/mpeg;base64,//uQZAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg"></audio>
+    <!-- modal final -->
+    <div id="finalModal" class="modal" aria-hidden="true">
+      <div class="modal-backdrop"></div>
+      <div class="modal-card">
+        <p class="modal-text">Ten bonita noche, Ana 🌙</p>
+        <button id="closeModal" class="btn">Cerrar</button>
+      </div>
+    </div>
+    <!-- sorpresa pequeña tras cerrar modal -->
+    <div id="surprise" class="surprise" aria-hidden="true">
+      <div class="surprise-card">
+        <p class="surprise-text">Sorpresa 🎁<br>Que descanses y sueñes cosas bonitas. — Nilton</p>
+        <button id="closeSurprise" class="btn">Cerrar</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="script.js" defer></script>
+</body>
+</html>

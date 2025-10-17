@@ -1,0 +1,153 @@
+:root{
+  --bg: #fff5f8;
+  --accent: #ff5c93;
+  --muted: #6b6b6b;
+  --card-bg: #fff;
+  --shadow: 0 8px 24px rgba(0,0,0,0.12);
+  --radius: 16px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background: linear-gradient(180deg,var(--bg),#ffeef6);
+  color:#222;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+
+.stage{
+  width:100%;
+  max-width:520px;
+  background:var(--card-bg);
+  border-radius:20px;
+  box-shadow:var(--shadow);
+  padding:20px;
+}
+
+.title{text-align:center}
+.title h1{margin:0;font-size:1.4rem;color:var(--accent)}
+.subtitle{margin:6px 0 14px;color:var(--muted);font-size:0.95rem}
+
+.card-area{position:relative;height:420px;display:flex;align-items:center;justify-content:center}
+.envelopes{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+
+.envelope{
+  --idx:0;
+  width:86%;
+  max-width:420px;
+  height:220px;
+  position:absolute;
+  transform-origin:top center;
+  transition:transform 600ms cubic-bezier(.2,.9,.2,1),opacity 400ms;
+  border-radius:14px;
+  background:linear-gradient(180deg,#fff,#fff0f3);
+  box-shadow:var(--shadow);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+.envelope::before{ /* solapa */
+  content:"";
+  position:absolute;
+  top:-40px;
+  left:12%;
+  right:12%;
+  height:80px;
+  background:linear-gradient(180deg,#fff6fb,#ffdce8);
+  transform-origin:center bottom;
+  border-radius:6px 6px 50% 50%;
+  box-shadow:0 6px 18px rgba(0,0,0,0.08);
+  transition:transform 400ms cubic-bezier(.2,.9,.2,1), opacity 300ms ease;
+  pointer-events:none;
+  z-index:0;
+}
+
+.envelope .message{
+  padding:22px 28px;
+  text-align:center;
+  font-size:1.05rem;
+  color:#333;
+  position:relative;
+  z-index:2;
+}
+
+.envelope.locked{cursor:pointer}
+.envelope.opened{transform:translateY(-40px) rotateX(10deg);opacity:1}
+.envelope.opened::before{opacity:0; transform:translateY(-40px);}
+
+/* cuando la capa se marca como completada, se encoge y desvanece */
+.envelope.done{transform:translateY(-10px) scale(.92) rotateX(6deg);opacity:0;transition:transform 420ms ease,opacity 420ms}
+
+/* stacking offset */
+.envelope[data-idx="0"]{transform:translateY(0) scale(1); z-index:6}
+.envelope[data-idx="1"]{transform:translateY(12px) scale(.98); z-index:5}
+.envelope[data-idx="2"]{transform:translateY(24px) scale(.96); z-index:4}
+.envelope[data-idx="3"]{transform:translateY(36px) scale(.94); z-index:3}
+.envelope[data-idx="4"]{transform:translateY(48px) scale(.92); z-index:2}
+
+.final-message{
+  padding:20px 26px;
+  text-align:center; /* centrar la carta final */
+  line-height:1.45;
+  font-size:1rem;
+  white-space:pre-wrap; /* respetar saltos de línea y evitar distorsión */
+  display:block;
+  background: linear-gradient(180deg,#fffdf9,#fff5ee);
+  border-radius:10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+  max-width:88%;
+  margin:0 auto;
+}
+
+.controls{display:flex;gap:10px;justify-content:center;margin-top:14px}
+.btn{background:var(--accent);color:#fff;border:0;padding:10px 16px;border-radius:10px;font-weight:600;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:2px solid var(--accent)}
+
+/* confetti */
+#confetti{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none;overflow:hidden}
+.confetti-piece{position:absolute;width:10px;height:14px;border-radius:2px;opacity:0.95;transform-origin:center;animation:fall 2200ms linear forwards}
+@keyframes fall{to{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* emoji pequeño dentro de la capa */
+.emoji{position:absolute;right:12px;bottom:10px;font-size:1.6rem;opacity:0;transform:translateY(6px) scale(.9);transition:transform 360ms,opacity 360ms}
+.envelope.opened .emoji{opacity:1;transform:translateY(0) scale(1.04)}
+
+/* heart pieces (suben y bajan) */
+#confetti .heart-piece{position:absolute;font-size:20px;pointer-events:none;opacity:0.95;filter:drop-shadow(0 6px 8px rgba(0,0,0,0.08));}
+.heart-up{animation-name:floatUp;animation-timing-function:linear;}
+.heart-down{animation-name:floatDown;animation-timing-function:linear;}
+@keyframes floatUp{0%{transform:translateY(0) scale(1) rotate(0);opacity:1}100%{transform:translateY(-120vh) scale(0.9) rotate(360deg);opacity:0}}
+@keyframes floatDown{0%{transform:translateY(0) scale(1) rotate(0);opacity:1}100%{transform:translateY(120vh) scale(0.9) rotate(-360deg);opacity:0}}
+
+/* modal final */
+.modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:999}
+.modal.show{display:flex}
+.modal-backdrop{position:absolute;inset:0;background:rgba(0,0,0,0.36)}
+.modal-card{position:relative;background:#fff;padding:20px;border-radius:12px;box-shadow:0 12px 40px rgba(0,0,0,0.28);max-width:360px;text-align:center}
+.modal-text{margin:0 0 12px;font-size:1.05rem}
+
+/* sorpresa pequeña */
+.surprise{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:1000}
+.surprise.show{display:flex}
+.surprise-card{background:linear-gradient(180deg,#fff8fb,#fff);padding:18px;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.18);max-width:380px;text-align:center}
+.surprise-text{margin:0 0 12px;font-size:1rem}
+
+/* responsive */
+@media (max-width:420px){
+  .stage{padding:14px}
+  .card-area{height:360px}
+  .envelope{height:200px;width:92%}
+  .title h1{font-size:1.2rem}
+}
+
+/* small accessibility focus */
+.envelope:focus{outline:3px solid rgba(255,92,147,0.18)}
