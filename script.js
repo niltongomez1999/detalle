@@ -25,9 +25,10 @@ const closeSurprise = document.getElementById('closeSurprise');
 
 let current = 0;
 let envelopeEls = [];
-let runner = null;
+let running = false; // indica que la secuencia está en ejecución
 let paused = false;
 let stopped = false;
+let heartsInterval = null; // id del interval para corazones infinitos
 
 function createEnvelopes(){
   envelopesContainer.innerHTML = '';
@@ -35,6 +36,8 @@ function createEnvelopes(){
 
   // crear una capa final (la carta) y varias capas encima
   const total = messages.length + 1;
+  // emojis reutilizables para las capas
+  const emojis = ['😊','🌷','🌟','🌼','💌'];
 
   for(let i=0;i<total;i++){
     const el = document.createElement('div');
@@ -52,11 +55,10 @@ function createEnvelopes(){
       msg.innerHTML = `<div class="final-message">${finalLetter.replace(/\n/g,'<br>')}</div>`;
     }
 
-  // agregar emoji pequeño para cada capa (variado)
-  const emojis = ['😊','🌷','🌷','🌷','🌷'];
-  const emoji = document.createElement('div');
-  emoji.className = 'emoji';
-  emoji.textContent = emojis[i % emojis.length];
+    // agregar emoji pequeño para cada capa
+    const emoji = document.createElement('div');
+    emoji.className = 'emoji';
+    emoji.textContent = emojis[i % emojis.length];
   el.appendChild(msg);
   el.appendChild(emoji);
 
@@ -105,7 +107,7 @@ function startSequence(){
   // Secuencia: abrir cada capa, mostrar 2s, desaparecer y continuar
   paused = false;
   stopped = false;
-  runner = true;
+  running = true;
   (async function run(){
     while(current < envelopeEls.length && !stopped){
       while(paused && !stopped) await sleep(120);
@@ -127,9 +129,17 @@ function startSequence(){
     }
     if(!stopped){ playConfetti(); playFinishSound(); }
     if(!stopped){ playHearts(); }
+    // iniciar corazones infinitos (generar periódicamente)
+    if(!stopped){
+      if(heartsInterval) clearInterval(heartsInterval);
+      heartsInterval = setInterval(()=>{
+        // generar algunos corazones al azar
+        playHearts();
+      }, 1200);
+    }
     if(!stopped && finalModal){ finalModal.classList.add('show'); finalModal.setAttribute('aria-hidden','false'); }
     startBtn.disabled = false;
-    runner = null;
+    running = false;
   })();
 }
 
@@ -137,25 +147,31 @@ function resetAll(){
   startBtn.disabled = false;
   resetBtn.disabled = false;
   // stop any running sequence
-  if(runner){ clearInterval(runner); runner = null; }
+  if(running){ stopped = true; running = false; }
   paused = false;
+  // detener corazones infinitos si están activos
+  if(heartsInterval){ clearInterval(heartsInterval); heartsInterval = null; }
   createEnvelopes();
 }
 
 // inicializar
 createEnvelopes();
 
-startBtn.addEventListener('click', startSequence);
-resetBtn.addEventListener('click', resetAll);
-pauseBtn.addEventListener('click', ()=>{
-  if(!runner) return;
+if(startBtn) startBtn.addEventListener('click', startSequence);
+if(resetBtn) resetBtn.addEventListener('click', resetAll);
+if(pauseBtn) pauseBtn.addEventListener('click', ()=>{
+  if(!running) return;
   paused = !paused;
   pauseBtn.textContent = paused ? 'Continuar' : 'Pausa';
 });
-stopBtn.addEventListener('click', ()=>{
-  if(runner){ clearInterval(runner); runner = null; }
+if(stopBtn) stopBtn.addEventListener('click', ()=>{
+  // signal the running sequence to stop
+  stopped = true;
+  running = false;
   paused = false;
-  pauseBtn.textContent = 'Pausa';
+  if(pauseBtn) pauseBtn.textContent = 'Pausa';
+  // limpiar corazones infinitos
+  if(heartsInterval){ clearInterval(heartsInterval); heartsInterval = null; }
 });
 
 if(closeModal){
@@ -171,6 +187,11 @@ if(closeModal){
 if(closeSurprise){
   closeSurprise.addEventListener('click', ()=>{
     if(surprise){ surprise.classList.remove('show'); surprise.setAttribute('aria-hidden','true'); }
+    // si el botón tiene data-href, ir a esa página
+    try{
+      const href = closeSurprise.getAttribute('data-href') || closeSurprise.dataset.href;
+      if(href){ window.open(href, '_blank'); return; }
+    }catch(e){}
     // volver al inicio: reiniciar la interfaz y poner foco en Empezar
     try{ resetAll(); }catch(e){}
     try{ startBtn.focus(); window.scrollTo({top:0,behavior:'smooth'}); }catch(e){}
@@ -179,8 +200,9 @@ if(closeSurprise){
 
 // accesibilidad: permitir abrir capas con swipe en móviles
 let touchStartY = null;
-envelopesContainer.addEventListener('touchstart', (e)=>{ touchStartY = e.changedTouches[0].clientY; });
-envelopesContainer.addEventListener('touchend', (e)=>{
+if(envelopesContainer){
+  envelopesContainer.addEventListener('touchstart', (e)=>{ touchStartY = e.changedTouches[0].clientY; });
+  envelopesContainer.addEventListener('touchend', (e)=>{
   if(!touchStartY) return;
   const dy = e.changedTouches[0].clientY - touchStartY;
   if(dy < -30){ // swipe up -> abrir
@@ -188,9 +210,10 @@ envelopesContainer.addEventListener('touchend', (e)=>{
     if(topIndex < envelopeEls.length) openEnvelope(topIndex);
   }
   touchStartY = null;
-});
-
-// permitir personalizar el nombre con prompt al cargar la carta final
+  });
+}
+// nota: la personalización de nombre puede implementarse si se desea (prompt o campo),
+// se omitió aquí para mantener la interfaz simple.
 
 // --- confetti simple ---
 function playConfetti(){
